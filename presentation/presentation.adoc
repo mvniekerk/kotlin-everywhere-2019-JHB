@@ -1,0 +1,114 @@
+:imagesdir: ./images
+:revealjs_theme: white
+:revealjs_controls: false
+
+= Kloudy with a chance of Kotlin
+Michael van Niekerk
+
+== Hello
+Hello, I'm Michael van Niekerk and I like tech.
+
+twitter.com/chazaqdev
+
+image::logo.png[]
+
+== Aims
+
+=== !
+
+==== TL;DR
+* No intro to serverless / FaaS
+* Mail a PDF with IOT sensor stats
+* Compare stuff
+
+=== !
+
+image::database.svg[width=5%]
+Spin up a staging tables, programmatically
+
+=== !
+image::sensor.svg[width=5%]
+image::database.svg[width=5%]
+
+Copy sensor events into staging DB
+
+=== !
+
+image::calendar.svg[width=5%]
+image::stats.svg[width=5%]
+
+Stats for:
+
+* Per sensor, per time period
+* Per site (collection of sensors), per time period
+
+=== !
+image::stats.svg[width=5%]
+image::pdf.svg[width=5%]
+
+Make PDF from stats
+
+=== !
+image::pdf.svg[width=5%]
+image::email.svg[width=5%]
+Mail PDF
+
+=== !
+
+Compare:
+
+* Documentation
+* Speed
+* Cost
+
+=== !
+Do this for Amazon Lambda, Google GCP Cloud Functions, Microsoft Azure Functions
+
+== Compare documentation
+
+=== !
+[options="header"]
+|===
+|                                      | AWS | GCP | Azure
+| Official Kotlin documentation        |     |  Y  |
+| Kotlin in official blogs             |  Y  |  Y  |
+| Kotlin in third party blogs          |  Y  |  Y  |   Y
+| Official Kotlin samples repositories |  Y  |  Y  |
+|===
+
+== Prerequisites - Ubuntu 18.04
+
+* `sudo apt install -y unzip zip python-pip`
+* `curl -s "https://get.sdkman.io" | bash`
+* `sdk install java 8.0.222-zulu`
+* `sdk install gradle`
+* `sdk install maven`    # Thanks MS </s>
+
+=== !
+
+==== SDK installs
+
+* `pip install awscli`
+* `curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash`
+* `curl https://sdk.cloud.google.com | bash && exec -l $SHELL`
+
+=== !
+image::heavy_breathing.gif[]
+
+=== !
+
+== Create a Lambda / Function
+
+=== AWS Lambda
+
+=== !
+
+* `gradle init`
+* `implementation("com.amazonaws:aws-lambda-java-core:1.2.0")`
+* Make a fatjar (shadowjar gradle plugin)
+* Log into aws with aws-cli
+* Deploy using AWS CLI
+
+=== !
+==== build.gradle.kts
+image::aws.1.build.gradle.kts.png[]
