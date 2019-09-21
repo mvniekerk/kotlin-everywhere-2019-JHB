@@ -6,7 +6,7 @@
 Michael van Niekerk
 
 == Hello
-Hello, I'm Michael van Niekerk and I like tech.
+I'm Michael van Niekerk and I like tech.
 
 twitter.com/chazaqdev
 
@@ -14,12 +14,177 @@ image::logo.png[]
 
 == Aims
 
+* FaaS comparison
+* AWS Lambda, Google Cloud Functions and Microsoft Azure Functions
+* Benchmark on creating a PDF with IOT sensor stats
+* Documentation, speed, cost
+
+=== A note on Google's "Serverless"
+
+* GAE - standard and flexible versions. Managed HTTP
+* Cloud Run - BYO docker image, run on 1 CPU (scaled for you). Beta, only us-central-1. Managed KNative
+* Cloud Functions - alpha for JVM. GA for Node
+
 === !
 
-==== TL;DR
-* No intro to serverless / FaaS
-* Mail a PDF with IOT sensor stats
-* Compare stuff
+For the fear of the alpha label, we'll be doing GCF using KotlinJs, running on Node.
+
+== Compare documentation
+
+=== !
+[options="header"]
+|===
+|                                      | AWS | GAE | GCF | GCR | Azure
+| Official Kotlin documentation        |     |  Y  |     |     |
+| Official JVM documentation           |  Y  |  Y  |     |     |   Y
+| Kotlin in official blogs             |  Y  |  Y  |     |     |
+| Kotlin in third party blogs          |  Y  |  Y  |  Y  |  Y  |   Y
+| Official Kotlin samples repositories |  Y  |  Y  |  *  |  Y  |   Y
+|===
+
+== Setup
+
+=== JVM Prerequisites
+
+[source,sh]
+----
+sudo apt install -y unzip zip
+curl -s "https://get.sdkman.io" | bash
+sdk install java 8.0.222-zulu
+sdk install gradle
+sdk install maven    # Thanks MS </s>
+----
+
+=== Yarn
+
+[source,sh]
+----
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg \
+ | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" \
+ | sudo tee /etc/apt/sources.list.d/yarn.list
+sudo apt update
+sudo apt install yarn
+----
+
+=== !
+
+==== SDK installs
+
+* `sudo snap install aws-cli --classic`
+* `curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash`
+* `curl https://sdk.cloud.google.com | bash && exec -l $SHELL`
+
+=== !
+image::heavy_breathing.gif[]
+
+=== !
+
+== AWS Lambda
+A simple function
+
+=== !
+
+* Create user, use credentials using `aws config`
+* Create role for the running function
+* `gradle init` and follow Kotlin prompts
+* `implementation("com.amazonaws:aws-lambda-java-core:1.2.0")`
+* Make a fatjar (shadowjar gradle plugin)
+* Deploy using AWS CLI
+
+=== !
+==== build.gradle.kts
+image::aws.1.build.gradle.kts.png[]
+
+=== !
+
+==== handler.kt
+
+image::aws.1.handler.kt.png[]
+
+=== !
+
+==== Deploy
+
+The --role must have permission to upload logs to Amazon CloudWatch Logs.
+--timeout is a max of 900s (15 minutes)
+
+[source,sh]
+----
+aws lambda create-function --region eu-central-1 --function-name marco-polo \
+--zip-file fileb://build/libs/aws-all.jar \
+--role arn:aws:iam::<account_id>:role/lambda_basic_execution \
+--handler aws.MarcoPoloHandler --runtime java8 \
+--timeout 15 --memory-size 128
+----
+
+=== !
+
+==== Run
+
+Follow setup https://docs.aws.amazon.com/lambda/latest/dg/with-userapp.html
+
+[source,sh]
+----
+ aws lambda invoke --function-name marco-polo \
+  --payload '{"name":"Piet"}' out.json --log-type Tail \
+--query 'LogResult' --output text |  base64 -d
+
+cat out.json
+----
+
+=== !
+
+image::aws.1.output.png[]
+
+== Google Cloud Functions
+
+=== !
+
+* Using GCP console to create a project with billing enabled
+* `gradle init` and follow Kotlin prompts
+* Change build.gradle.kt to use the Kotlin2Js plugin, stdlib-js
+* Configure Kotlin2Js plugin to emit CommonJS modules
+* `yarn add kotlin`
+* Deploy using GCloud CLI
+
+=== !
+==== build.gradle.kts
+image::gcp.1.build.gradle.kt.png[]
+
+
+=== !
+==== package.json
+image::gcp.1.package.json.png[]
+
+=== !
+==== MarcoPoloHandler.kt
+image::gcp.1.MarcoPoloHandler.kt.png[]
+
+=== Deploy
+
+[source,sh]
+----
+gcloud functions deploy marcoPolo \
+--project ke2019 --runtime nodejs10 \
+--trigger-http
+----
+
+=== Run
+
+[source,sh]
+----
+ curl --data '{"name":"Piet"}' https://us-central1-ke2019.cloudfunctions.net/marcoPolo  -H "Content-Type:application/json"
+
+----
+
+== Azure Functions
+
+=== !
+
+* mvn archetype
+*
+
 
 === !
 
@@ -30,7 +195,7 @@ Spin up a staging tables, programmatically
 image::sensor.svg[width=5%]
 image::database.svg[width=5%]
 
-Copy sensor events into staging DB
+Copy sensor events into staging tables
 
 === !
 
@@ -62,53 +227,4 @@ Compare:
 * Cost
 
 === !
-Do this for Amazon Lambda, Google GCP Cloud Functions, Microsoft Azure Functions
-
-== Compare documentation
-
-=== !
-[options="header"]
-|===
-|                                      | AWS | GCP | Azure
-| Official Kotlin documentation        |     |  Y  |
-| Kotlin in official blogs             |  Y  |  Y  |
-| Kotlin in third party blogs          |  Y  |  Y  |   Y
-| Official Kotlin samples repositories |  Y  |  Y  |
-|===
-
-== Prerequisites - Ubuntu 18.04
-
-* `sudo apt install -y unzip zip python-pip`
-* `curl -s "https://get.sdkman.io" | bash`
-* `sdk install java 8.0.222-zulu`
-* `sdk install gradle`
-* `sdk install maven`    # Thanks MS </s>
-
-=== !
-
-==== SDK installs
-
-* `pip install awscli`
-* `curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash`
-* `curl https://sdk.cloud.google.com | bash && exec -l $SHELL`
-
-=== !
-image::heavy_breathing.gif[]
-
-=== !
-
-== Create a Lambda / Function
-
-=== AWS Lambda
-
-=== !
-
-* `gradle init`
-* `implementation("com.amazonaws:aws-lambda-java-core:1.2.0")`
-* Make a fatjar (shadowjar gradle plugin)
-* Log into aws with aws-cli
-* Deploy using AWS CLI
-
-=== !
-==== build.gradle.kts
-image::aws.1.build.gradle.kts.png[]
+Do this for Amazon Lambda, Google GAE, Microsoft Azure Functions
