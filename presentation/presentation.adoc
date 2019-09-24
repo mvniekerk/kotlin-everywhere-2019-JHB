@@ -19,11 +19,23 @@ image::logo.png[]
 * Benchmark on creating a PDF with IOT sensor stats
 * Documentation, speed, cost
 
-=== A note on Google's "Serverless"
+=== AWS' Serverless
 
-* GAE - standard and flexible versions. Managed HTTP
-* Cloud Run - BYO docker image, run on 1 CPU (scaled for you). Beta, only us-central-1. Managed KNative
-* Cloud Functions - alpha for JVM. GA for Node
+* PaaS - Beanstalk
+* Caas - Fargate
+* FaaS - Lambda
+
+=== Google's Serverless
+
+* PaaS - Google App Engine
+* CaaS - Cloud Run - Beta (limited regions)
+* FaaS - Cloud Functions - alpha for JVM. GA for Node
+
+=== MS Azure's Serverless
+
+* PaaS - Azure Web Apps
+* CaaS - Azure Container Instances (ACI)
+* FaaS - Azure Functions
 
 === !
 
@@ -51,8 +63,9 @@ For the fear of the alpha label, we'll be doing GCF using KotlinJs, running on N
 sudo apt install -y unzip zip
 curl -s "https://get.sdkman.io" | bash
 sdk install java 8.0.222-zulu
+sdk default java 8.0.222-zulu
 sdk install gradle
-sdk install maven    # Thanks MS </s>
+sdk install maven
 ----
 
 === Yarn
@@ -152,7 +165,6 @@ image::aws.1.output.png[]
 ==== build.gradle.kts
 image::gcp.1.build.gradle.kt.png[]
 
-
 === !
 ==== package.json
 image::gcp.1.package.json.png[]
@@ -182,9 +194,28 @@ gcloud functions deploy marcoPolo \
 
 === !
 
-* mvn archetype
-*
+* mvn azure-functions-kotlin-archetype
+* mvn clean package azure-functions:deploy -X
 
+=== !
+==== mvn archetype
+
+[source,bash]
+----
+mvn archetype:generate \
+-DarchetypeGroupId=ke2019.azure \
+-DarchetypeArtifactId=azure-functions-kotlin-archetype \
+-DgroupId=ke2019.azure -DartifactId=SimpleFunction \
+-Dversion=1.0-SNAPSHOT -DappName=SimpleFunction \
+-DappRegion=westus -DresourceGroup=kotlin-everywhere \
+-DinteractiveMode=false
+
+----
+
+=== !
+==== Function.kt
+
+image::azure.1.function.kt.png[]
 
 === !
 
