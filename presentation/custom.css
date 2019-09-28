@@ -1,0 +1,11 @@
+section.docstable table td {
+    padding: 0.1em 0.1em 0.1em 0.1em;
+}
+
+img {
+    border: none !important;
+}
+
+section.awsserverless img {
+    opacity: 50%;
+}

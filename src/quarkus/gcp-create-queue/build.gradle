@@ -1,0 +1,44 @@
+buildscript {
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-noarg:${kotlinVersion}")
+    }
+}
+plugins {
+    id "io.quarkus"
+}
+
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: "org.jetbrains.kotlin.plugin.allopen"
+apply plugin: "kotlin-jpa"
+
+version "0.1"
+group "ke2019"
+
+repositories {
+    mavenCentral()
+    maven { url "https://jcenter.bintray.com" }
+}
+
+dependencies {
+    implementation enforcedPlatform("io.quarkus:quarkus-bom:${quarkusVersion}")
+    implementation "io.quarkus:quarkus-hibernate-orm"
+    implementation "io.quarkus:quarkus-jdbc-postgresql"
+    implementation "io.quarkus:quarkus-resteasy"
+    implementation "io.quarkus:quarkus-resteasy-jackson"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+
+quarkusDev {
+    sourceDir "${projectDir}/src/main/kotlin"
+}
+
+quarkus {
+    outputDirectory = "${project.buildDir}/classes/java/main"
+}
+
+allOpen {
+    annotation("javax.persistence.Entity")
+    annotation("javax.persistence.MappedSuperclass")
+    annotation("javax.persistence.Embeddable")
+    annotation("javax.enterprise.context.RequestScoped")
+}

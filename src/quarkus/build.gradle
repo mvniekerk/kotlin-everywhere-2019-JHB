@@ -1,0 +1,4 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm" apply false
+    id "org.jetbrains.kotlin.plugin.allopen" apply false
+}

@@ -1,57 +1,82 @@
 :imagesdir: ./images
 :revealjs_theme: white
 :revealjs_controls: false
+:customcss: custom.css
+:source-highlighter: highlightjs
 
 = Kloudy with a chance of Kotlin
 Michael van Niekerk
 
 == Hello
-I'm Michael van Niekerk and I like tech.
+I'm Michael van Niekerk and I like Kotlin.
 
 twitter.com/chazaqdev
 
 image::logo.png[]
 
-== Aims
+== Cloud native
 
-* FaaS comparison
-* AWS Lambda, Google Cloud Functions and Microsoft Azure Functions
-* Benchmark on creating a PDF with IOT sensor stats
-* Documentation, speed, cost
+[%step]
+* Microservices
+* Containerized
+* DevOps / Orchestration
+* CNCF
 
+=== Serverless
+[%step]
+* Managed, ephemeral, stateless
+* Event triggered
+* Costs
+
+=== !
+
+image::cutter.gif[]
+
+* FaaS - Function as a service
+* PaaS - Platform as a service
+* CaaS - Container as a service
+
+[.awsserverless]
 === AWS' Serverless
 
+[background,size=cover,opacity=50%]
+image::aws.png[opacity=50%]
+
 * PaaS - Beanstalk
-* Caas - Fargate
 * FaaS - Lambda
+* CaaS - Fargate
 
 === Google's Serverless
 
+[background,size=cover,opacity=50%]
+image::gcp.png[opacity=50%]
 * PaaS - Google App Engine
-* CaaS - Cloud Run - Beta (limited regions)
 * FaaS - Cloud Functions - alpha for JVM. GA for Node
+* CaaS - Cloud Run - Beta (limited regions)
 
 === MS Azure's Serverless
 
+[background,size=cover,opacity=50%]
+image::azure.png[opacity=50%]
 * PaaS - Azure Web Apps
-* CaaS - Azure Container Instances (ACI)
 * FaaS - Azure Functions
+* CaaS - Azure Container Instances (ACI)
 
+== FaaS
+
+=== Comparing documentation
+
+[.docstable]
 === !
 
-For the fear of the alpha label, we'll be doing GCF using KotlinJs, running on Node.
-
-== Compare documentation
-
-=== !
-[options="header"]
+[.stretch,size=cover,cols="3,1,1,1",options="header"]
 |===
-|                                      | AWS | GAE | GCF | GCR | Azure
-| Official Kotlin documentation        |     |  Y  |     |     |
-| Official JVM documentation           |  Y  |  Y  |     |     |   Y
-| Kotlin in official blogs             |  Y  |  Y  |     |     |
-| Kotlin in third party blogs          |  Y  |  Y  |  Y  |  Y  |   Y
-| Official Kotlin samples repositories |  Y  |  Y  |  *  |  Y  |   Y
+|                                      | AWS | GCF | Azure
+| Official Kotlin documentation        |     |     |   Y
+| Official JVM documentation           |  Y  |     |   Y
+| Kotlin in official blogs             |  Y  |     |
+| Kotlin in third party blogs          |  Y  |  Y  |   Y
+| Official Kotlin samples repositories |  Y  |  *  |   Y
 |===
 
 == Setup
@@ -84,35 +109,36 @@ sudo apt install yarn
 
 ==== SDK installs
 
-* `sudo snap install aws-cli --classic`
-* `curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash`
-* `curl https://sdk.cloud.google.com | bash && exec -l $SHELL`
+[source,bash]
+----
+sudo snap install aws-cli --classic
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+curl https://sdk.cloud.google.com | bash && exec -l $SHELL
+gcloud components install beta
+----
 
 === !
+
 image::heavy_breathing.gif[]
 
-=== !
-
 == AWS Lambda
-A simple function
 
 === !
 
-* Create user, use credentials using `aws config`
-* Create role for the running function
-* `gradle init` and follow Kotlin prompts
+[%step]
+* IAM user, credentials `aws config`
+* Function role
 * `implementation("com.amazonaws:aws-lambda-java-core:1.2.0")`
-* Make a fatjar (shadowjar gradle plugin)
 * Deploy using AWS CLI
 
 === !
-==== build.gradle.kts
+
+[background,size=100%]
 image::aws.1.build.gradle.kts.png[]
 
 === !
 
-==== handler.kt
-
+[background,size=100%]
 image::aws.1.handler.kt.png[]
 
 === !
@@ -124,7 +150,8 @@ The --role must have permission to upload logs to Amazon CloudWatch Logs.
 
 [source,sh]
 ----
-aws lambda create-function --region eu-central-1 --function-name marco-polo \
+aws lambda create-function --region eu-central-1 \
+--function-name marco-polo \
 --zip-file fileb://build/libs/aws-all.jar \
 --role arn:aws:iam::<account_id>:role/lambda_basic_execution \
 --handler aws.MarcoPoloHandler --runtime java8 \
@@ -142,35 +169,37 @@ Follow setup https://docs.aws.amazon.com/lambda/latest/dg/with-userapp.html
  aws lambda invoke --function-name marco-polo \
   --payload '{"name":"Piet"}' out.json --log-type Tail \
 --query 'LogResult' --output text |  base64 -d
-
-cat out.json
 ----
 
 === !
 
+[background,size=100%]
 image::aws.1.output.png[]
 
 == Google Cloud Functions
 
 === !
 
-* Using GCP console to create a project with billing enabled
-* `gradle init` and follow Kotlin prompts
+For the fear of the alpha label, we'll be doing GCF using KotlinJs, running on Node.
+
+=== !
+
+[%step]
+
+* Project with billing
 * Change build.gradle.kt to use the Kotlin2Js plugin, stdlib-js
-* Configure Kotlin2Js plugin to emit CommonJS modules
+* CommonJS modules
 * `yarn add kotlin`
 * Deploy using GCloud CLI
 
 === !
-==== build.gradle.kts
+
+[background,size=100%]
 image::gcp.1.build.gradle.kt.png[]
 
 === !
-==== package.json
-image::gcp.1.package.json.png[]
 
-=== !
-==== MarcoPoloHandler.kt
+[background,size=100%]
 image::gcp.1.MarcoPoloHandler.kt.png[]
 
 === Deploy
@@ -186,16 +215,19 @@ gcloud functions deploy marcoPolo \
 
 [source,sh]
 ----
- curl --data '{"name":"Piet"}' https://us-central1-ke2019.cloudfunctions.net/marcoPolo  -H "Content-Type:application/json"
-
+ curl --data '{"name":"Piet"}' \
+ https://us-central1-ke2019.cloudfunctions.net/marcoPolo \
+ -H "Content-Type:application/json"
 ----
 
 == Azure Functions
 
 === !
 
-* mvn azure-functions-kotlin-archetype
-* mvn clean package azure-functions:deploy -X
+[%step]
+* `az login`
+* maven archetype
+* maven deploy
 
 === !
 ==== mvn archetype
@@ -212,50 +244,79 @@ mvn archetype:generate \
 
 ----
 
-=== !
-==== Function.kt
+=== Function.kt
 
+[background,height=100%]
 image::azure.1.function.kt.png[]
 
-=== !
+=== Deploy
 
-image::database.svg[width=5%]
-Spin up a staging tables, programmatically
+[source,bash]
+----
+mvn clean package azure-functions:deploy -X
+----
 
-=== !
-image::sensor.svg[width=5%]
-image::database.svg[width=5%]
+image::azure.1.deploy.png[width=80%]
 
-Copy sensor events into staging tables
+=== Run
 
-=== !
+[source,bash]
+----
+curl -v -X POST -d '{"name":"Piet"}' \
+https://kotlineverywhere2019simplefunction.azurewebsites.net/api/MarcoPolo
+----
 
-image::calendar.svg[width=5%]
-image::stats.svg[width=5%]
+== !
 
-Stats for:
-
-* Per sensor, per time period
-* Per site (collection of sensors), per time period
-
-=== !
-image::stats.svg[width=5%]
-image::pdf.svg[width=5%]
-
-Make PDF from stats
-
-=== !
-image::pdf.svg[width=5%]
-image::email.svg[width=5%]
-Mail PDF
+image::completelydifferent.jpg[background, size=cover]
 
 === !
 
-Compare:
-
-* Documentation
-* Speed
-* Cost
+[%step]
+* GraalVM
+* Kotlin
+* Quarkus, Micronaut, VertX
+* Docker
+* CaaS
 
 === !
-Do this for Amazon Lambda, Google GAE, Microsoft Azure Functions
+
+[source,bash]
+----
+sdk install java 19.2.0-grl
+----
+
+=== !
+
+[background,size=cover]
+image::quarkus.settings.gradle.png[]
+
+=== !
+
+[background,size=cover]
+image::quarkus.resource.kt.png[]
+
+=== !
+image::skifree.webp[]
+
+=== !
+
+image::fleshwound.png[]
+
+=== !
+
+[background,height=100%]
+image::quarkus_startup.jpeg[]
+
+=== CaaS Frameworks
+
+https://winderresearch.com/a-comparison-of-serverless-frameworks-for-kubernetes-openfaas-openwhisk-fission-kubeless-and-more/
+
+[%step]
+* OpenFaaS
+* KNative
+* OpenWhisk
+* Project Fn
+
+=== Thank you
+
