@@ -244,7 +244,7 @@ mvn archetype:generate \
 
 ----
 
-=== Function.kt
+=== !
 
 [background,height=100%]
 image::azure.1.function.kt.png[]
